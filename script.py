@@ -2,14 +2,14 @@ import requests
 from bs4 import BeautifulSoup
 from word2number import w2n
 
-# This script aims to send a request to a given book URL from bookstoscrape and to scrape the needed information
+# This script aims to send a request to a given book URL from books.toscrape and to scrape the needed information
 
 # First define the URL
 theUrl = 'http://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html'
 
 
-# Function that sends the requests to the URL
-def send_request(url):
+# Function that sends the requests to the URL, calls the function that write the csv file with the answer
+def send_request_to_book_page(url):
     response = requests.get(url)
     if response.ok:
         # Converting the response to UTF8 encoding
@@ -19,12 +19,12 @@ def send_request(url):
         # Creating a BeautifulSoup object to easily parse through the response
         soup = BeautifulSoup(response.text, "html.parser")
         # Calling the function that will retrieve the needed information from the result
-        scrape_response(soup, url)
+        write_csv_file(soup, url)
     else:
         print("La requête a échoué")
 
 
-def scrape_response(soup, url):
+def write_csv_file(soup, url):
     # Writing the CSV file header
     with open('test.csv', 'w') as file:
         # Writing the header
@@ -40,11 +40,11 @@ def format_info(soup, url):
     info_string += '"' + url + '",'
 
     # The title can be recovered through the h1 section
-    info_string += '"' + soup.find('h1').text + '",'
+    info_string += '"' + soup.find('h1').text.replace('"', '""') + '",'
 
     # For the description, the div is not named and doesn't have class. So we access it by finding the previous div
     # and then using the function findNext of BeautifulSoup
-    info_string += '"' + soup.find(id="product_description").findNext('p').text + '",'
+    info_string += '"' + soup.find(id="product_description").findNext('p').text.replace('"', '""') + '",'
 
     # The UPC, prices, and number available are stored in a table through which we can iterate
     tds = soup.findAll('td')
@@ -78,8 +78,8 @@ def format_info(soup, url):
     info_string += '"' + final_link + "\n"
 
     # Returning our final object
-    # print(info_string)
+    print(info_string)
     return info_string
 
 
-send_request(theUrl)
+# send_request_to_book_page(theUrl)
