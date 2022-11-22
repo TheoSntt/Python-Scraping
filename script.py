@@ -1,93 +1,65 @@
 import requests
-from bs4 import BeautifulSoup
-from word2number import w2n
+from utility import send_request, format_info, get_books_url_from_category_page
+import math
+from pathlib import Path
+from datetime import date
 
-# This script aims to send a request to a given book URL from books.toscrape and to scrape the needed information
-
-# First define the URL
-theUrl = 'http://books.toscrape.com/catalogue/a-light-in-the-attic_1000/index.html'
-
-"""
-# Function that sends the requests to the URL, calls the function that write the csv file with the answer
-def send_request_to_book_page(url):
-    response = requests.get(url)
-    if response.ok:
-        # Converting the response to UTF8 encoding
-        # Added this step to troubleshoot the issue with non ASCII characters such as the english pound symbol
-        if response.encoding != 'utf-8':
-            response.encoding = 'utf-8'
-        # Creating a BeautifulSoup object to easily parse through the response
-        soup = BeautifulSoup(response.text, "html.parser")
-        # Calling the function that will retrieve the needed information from the result
-        write_csv_file(soup, url)
-    else:
-        print("La requête a échoué")
-
-
-def write_csv_file(soup, url):
-    # Writing the CSV file header
-    with open('test.csv', 'w') as file:
+# Sending a request to the homepage of books.toscrape
+theUrl = "http://books.toscrape.com/index.html"
+soup = send_request(theUrl)
+# Retrieving the category list from the HTML of the page, using BeautifulSoup
+categories = soup.findAll('ul')[2]
+categories_urls = {}
+for cat in categories.findChildren('a'):
+    cat_url = "http://books.toscrape.com/" + cat['href']
+    file_name = cat_url.split("/")[-2].split("_")[0]
+    categories_urls[file_name] = cat_url
+# At this point, we have a dict of categories URLs. For each category, we need all the books URLs.
+# We are going to loop through that object. So the following executes for each category
+for key in categories_urls:
+    # For each category of book, declare the file name, the category URL, the book urls list
+    file_name = key
+    category_url = categories_urls[key]
+    book_urls = []
+    # Get the HTML of the category page
+    category_content = send_request(category_url)
+    # Determine the number of pages of result
+    nb_pages = math.ceil(int(category_content.find('form').findChildren()[1].text) / 20)
+    print("Number of pages for category " + file_name + " : " + str(nb_pages))
+    # Extract books URL of the first pages of result
+    get_books_url_from_category_page(category_content, book_urls)
+    # This loop is entered only if there are more than 20 books in the category.
+    if nb_pages > 1:
+        for nb in range(2, nb_pages + 1):
+            # For each other page of result, builds and query the URL, and extract the books URL
+            nxt_page_url = category_url[:-10] + "page-" + str(nb) + ".html"
+            page_content = send_request(nxt_page_url)
+            get_books_url_from_category_page(page_content, book_urls)
+    # At this point, we have, for a given category, a complete list of book URLs
+    # We are now going to query each URL, extract the needed information from each page, and write it to CSV file.
+    # Building the file path for outputing the files
+    today = date.today()
+    d1 = today.strftime("%Y-%m-%d")
+    out_path = 'results/' + d1 + "/" + file_name + "/"
+    Path(out_path).mkdir(parents=True, exist_ok=True)
+    # Writing the CSV file
+    with open(out_path + file_name + '.csv', 'w', encoding='utf-8') as file:
         # Writing the header
-        header_str = "product_page_url, title, product_description, universal_product_code, price_including_tax, price_excluding_tax, number_available, category, review_rating, image_url\n"
+        header_str = "product_page_url, title, product_description, universal_product_code, price_including_tax, " \
+                     "price_excluding_tax, number_available, category, review_rating, image_url\n "
         file.write(header_str)
-        # Writing the infos
-        file.write((format_info(soup, url)))
-"""
+        # For each book. Going to query, extract the data, and write it to the file
+        for book_url in book_urls:
+            # Sending request to the URL and writing the info to the CSV
+            book_page_content = send_request(book_url)
+            output_string, img_url, img_name = format_info(book_page_content, book_url)
+            file.write(output_string)
+            # Exporting the image too
+            img_data = requests.get(img_url).content
+            with open(out_path + img_name + '.jpg', 'wb') as handler:
+                handler.write(img_data)
 
 
-def format_info(soup, url):
-    info_string = ""
-    # The URL is already known, it doesn't need to be scraped from the page
-    info_string += url + ','
-
-    # The title can be recovered through the h1 section
-    info_string += '"' + soup.find('h1').text.replace('"', """""") + '",'
-
-    # For the description, the div is not named and doesn't have class. So we access it by finding the previous div
-    # and then using the function findNext of BeautifulSoup
-    if soup.find(id="product_description") is not None:
-        info_string += '"'\
-            + soup.find(id="product_description").findNext('p').text.replace(' ...more', '').replace('"', """""") + '",'
-    else:
-        info_string += '"No description",'
-
-    # The UPC, prices, and number available are stored in a table through which we can iterate
-    tds = soup.findAll('td')
-    info_string += tds[0].text + ','
-    # For both prices value, removing the pound sign and converting to float
-    price_inc = tds[3].text[1:]
-    info_string += '"' + price_inc.replace(".", ",") + '",'
-    price_excl = tds[3].text[1:]
-    info_string += '"' + price_excl.replace(".", ",") + '",'
-    # Replace statements to remove unwanted information
-    info_string += tds[5].text.replace("In stock (", "").replace(" available)", "") + ','
-
-    # The category is only visible in a link on top of the page. We can access it by finding all 'li' elements
-    liz = soup.findAll('li')
-    # Some blank spaces and \n where present. Removed them with the strip method.
-    info_string += liz[2].text.strip() + ','
-
-    # The review rating is found in the name of the div containing the stars
-    # Getting the div
-    rating_div = soup.select("p[class^=star-rating]")[0]
-    # Getting the number written in all letters
-    rating_text = rating_div["class"][1]
-    # Converting it to number
-    rating_nb = w2n.word_to_num(rating_text)
-    info_string += str(rating_nb) + ','
-
-    # There is only one image in the page, so we can acess the link of the image by searching
-    # the one img div with bs4
-    raw_link = soup.find('img')['src']
-    final_link = "http://books.toscrape.com/" + raw_link[6:]
-    info_string += final_link + '\n'
-
-    # Retrieving the book name from the URL to name the saved image
-    img_name = url.split("/")[-2].split('_')[0]
-
-    # Returning our final object
-    print(info_string)
-    return info_string, final_link, img_name
 
 
-# send_request_to_book_page(theUrl)
+
