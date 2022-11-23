@@ -3,7 +3,21 @@ from utility import send_request, format_info, get_books_url_from_category_page
 import math
 from pathlib import Path
 from datetime import date
+import time
+import concurrent.futures
 
+
+def get_info_and_image_for_a_book(url):
+    book_page_content = send_request(url)
+    output_string, img_url, img_name = format_info(book_page_content, url)
+    file.write(output_string)
+    # Exporting the image too
+    img_data = requests.get(img_url).content
+    with open(out_path + img_name + '.jpg', 'wb') as handler:
+        handler.write(img_data)
+
+
+start_time = time.time()
 # Sending a request to the homepage of books.toscrape
 theUrl = "http://books.toscrape.com/index.html"
 soup = send_request(theUrl)
@@ -49,16 +63,23 @@ for key in categories_urls:
                      "price_excluding_tax, number_available, category, review_rating, image_url\n "
         file.write(header_str)
         # For each book. Going to query, extract the data, and write it to the file
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            executor.map(get_info_and_image_for_a_book, book_urls)
+        """
         for book_url in book_urls:
             # Sending request to the URL and writing the info to the CSV
+            get_info_and_image_for_a_book(book_url)
+            
             book_page_content = send_request(book_url)
             output_string, img_url, img_name = format_info(book_page_content, book_url)
             file.write(output_string)
             # Exporting the image too
             img_data = requests.get(img_url).content
             with open(out_path + img_name + '.jpg', 'wb') as handler:
-                handler.write(img_data)
+                handler.write(img_data)"""
 
+
+print("time elapsed: {:.2f}s".format(time.time() - start_time))
 
 
 

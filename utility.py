@@ -79,4 +79,3 @@ def get_books_url_from_category_page(page, url_list):
         # print(raw_url.findChildren("a")[0]['href'])
         book_url = "http://books.toscrape.com/catalogue" + raw_url.findChildren("a")[0]['href'][8:]
         url_list.append(book_url)
-
