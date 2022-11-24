@@ -1,16 +1,27 @@
 import requests
-from utility import send_request, format_info, get_books_url_from_category_page
+from utility import send_request, format_info_for_csv_lib, get_books_url_from_category_page
 import math
 from pathlib import Path
 from datetime import date
 import time
 import concurrent.futures
+import csv
 
 
 def get_info_and_image_for_a_book(url):
+    """
     book_page_content = send_request(url)
     output_string, img_url, img_name = format_info(book_page_content, url)
     file.write(output_string)
+    # Exporting the image too
+    img_data = requests.get(img_url).content
+    with open(out_path + img_name + '.jpg', 'wb') as handler:
+        handler.write(img_data)
+    """
+    book_page_content = send_request(url)
+    output_list, img_url, img_name = format_info_for_csv_lib(book_page_content, url)
+    writer.writerow(output_list)
+    # file.write(output_string)
     # Exporting the image too
     img_data = requests.get(img_url).content
     with open(out_path + img_name + '.jpg', 'wb') as handler:
@@ -54,29 +65,47 @@ for key in categories_urls:
     # Building the file path for outputing the files
     today = date.today()
     d1 = today.strftime("%Y-%m-%d")
-    out_path = 'results/' + d1 + "/" + file_name + "/"
+    out_path = 'results/' + d1 + "_4/" + file_name + "/"
     Path(out_path).mkdir(parents=True, exist_ok=True)
     # Writing the CSV file
-    with open(out_path + file_name + '.csv', 'w', encoding='utf-8') as file:
+    with open(out_path + file_name + '.csv', 'w', encoding='utf-8') as csv_file:
+        # Creating the csv writer object and writing the header
+        writer = csv.writer(csv_file, delimiter=',')
+        en_tete = ['product_page_url',
+                   'title',
+                   'product_description',
+                   'universal_product_code',
+                   'price_including_tax',
+                   'price_excluding_tax',
+                   'number_available',
+                   'category',
+                   'review_rating',
+                   'image_url']
+        writer.writerow(en_tete)
+        """
         # Writing the header
         header_str = "product_page_url, title, product_description, universal_product_code, price_including_tax, " \
                      "price_excluding_tax, number_available, category, review_rating, image_url\n "
         file.write(header_str)
+        """
+        """
         # For each book. Going to query, extract the data, and write it to the file
         with concurrent.futures.ThreadPoolExecutor() as executor:
             executor.map(get_info_and_image_for_a_book, book_urls)
         """
+
         for book_url in book_urls:
             # Sending request to the URL and writing the info to the CSV
             get_info_and_image_for_a_book(book_url)
-            
+            """
             book_page_content = send_request(book_url)
-            output_string, img_url, img_name = format_info(book_page_content, book_url)
-            file.write(output_string)
+            output_list, img_url, img_name = format_info_for_csv_lib(book_page_content, book_url)
+            writer.writerow(output_list)
             # Exporting the image too
             img_data = requests.get(img_url).content
             with open(out_path + img_name + '.jpg', 'wb') as handler:
-                handler.write(img_data)"""
+                handler.write(img_data)
+            """
 
 
 print("time elapsed: {:.2f}s".format(time.time() - start_time))
