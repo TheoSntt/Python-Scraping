@@ -10,7 +10,7 @@ import concurrent.futures
 def get_info_and_image_for_a_book(url):
     book_page_content = send_request(url)
     output_string, img_url, img_name = format_info(book_page_content, url)
-    file.write(output_string)
+    str_liste.append(output_string)
     # Exporting the image too
     img_data = requests.get(img_url).content
     with open(out_path + img_name + '.jpg', 'wb') as handler:
@@ -56,15 +56,23 @@ for key in categories_urls:
     d1 = today.strftime("%Y-%m-%d")
     out_path = 'results/' + d1 + "/" + file_name + "/"
     Path(out_path).mkdir(parents=True, exist_ok=True)
+    # Sending the parallel requests to get all the info
+    str_liste = []
+    with concurrent.futures.ThreadPoolExecutor() as executor:
+        executor.map(get_info_and_image_for_a_book, book_urls)
     # Writing the CSV file
     with open(out_path + file_name + '.csv', 'w', encoding='utf-8') as file:
         # Writing the header
         header_str = "product_page_url, title, product_description, universal_product_code, price_including_tax, " \
                      "price_excluding_tax, number_available, category, review_rating, image_url\n "
         file.write(header_str)
+        for str_line in str_liste:
+            file.write(str_line)
         # For each book. Going to query, extract the data, and write it to the file
+        """
         with concurrent.futures.ThreadPoolExecutor() as executor:
             executor.map(get_info_and_image_for_a_book, book_urls)
+        """
         """
         for book_url in book_urls:
             # Sending request to the URL and writing the info to the CSV
