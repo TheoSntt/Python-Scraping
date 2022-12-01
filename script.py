@@ -130,8 +130,8 @@ def get_info_and_image_for_a_book(url):
 
 """ Main part of the script.
 Starts by retrieving the category names and URL from the homepage of BooksToScrape.
-Then iterates for each category. Retrieve and storing the URLs of all books of that category.
-Then send parallel queries to each URL, to get the needed information and image.
+Then iterates for each category. Retrieves and stores the URLs of all books of that category.
+Then send parallel queries to each book URL, to get the needed information and image.
 Write all the information in a CSV file.
 """
 start_time = time.time()
