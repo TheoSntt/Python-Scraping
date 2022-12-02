@@ -157,7 +157,7 @@ for key in categories_urls:
     # Determine the number of pages of result
     nb_books_cat = int(category_content.find('form').findChildren()[1].text)
     nb_pages = math.ceil(nb_books_cat / 20)
-    print("Extracting information and image for the {} books of category {}.".format(nb_books_cat, file_name))
+    print("Extraction des informations et des images des {} livres de la catégorie {}.".format(nb_books_cat, file_name))
     # TODO : Might be worth it to use parallel queries there too, for some categories have up to 150 books. Not sure.
     # Extract books URL of the first pages of result
     get_books_url_from_category_page(category_content, book_urls)
@@ -200,4 +200,4 @@ for key in categories_urls:
             writer.writerow(row)
 
 
-print("time elapsed: {:.2f}s".format(time.time() - start_time))
+print("Extraction terminée. Temps d'exécution : {:.2f}s".format(time.time() - start_time))
