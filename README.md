@@ -9,7 +9,11 @@ Il a été conçu pour Books Online et a pour vocation de n'être utilisé que p
 
 ## Mise en place et exécution du script
 
-1. Téléchargez le projet depuis Github : https://github.com/TheoSntt/OC_Project2  
+1. Téléchargez le projet depuis Github
+Pour cloner le projet en local sur votre machine, copiez l'URL de ce repo et lancez la commande suivante dans git bash :  
+```
+git clone <URL du repo>
+```
 2. Créez un environnement virtuel Python en exécutant la commande suivantes dans le Terminal de votre choix :
 ```
 python -m venv <environment name>

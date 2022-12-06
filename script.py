@@ -50,6 +50,7 @@ def format_book_info_for_csv(soup, url):
         info_list.append(soup.find('h1').text)
     except:
         info_list.append("")
+        print("Le livre à l'URL {} n'a pas de titre".format(url))
 
     # For the description, the div is not named and doesn't have class. So we access it by finding the previous div
     # and then using the function findNext of BeautifulSoup
@@ -57,6 +58,7 @@ def format_book_info_for_csv(soup, url):
         info_list.append(soup.find(id="product_description").findNext('p').text.replace(' ...more', ''))
     except:
         info_list.append("")
+        print("Le livre à l'URL {} n'a pas de description".format(url))
 
     # The UPC, prices, and number available are stored in a table through which we can iterate
     tds = soup.findAll('td')
@@ -64,23 +66,27 @@ def format_book_info_for_csv(soup, url):
         info_list.append(tds[0].text)
     except:
         info_list.append("")
+        print("Le livre à l'URL {} n'a pas de code UPC".format(url))
     # For both prices value, removing the pound sign and replacing . with , for better reading in Excel
     try:
         price_inc = tds[3].text[1:]
         info_list.append(price_inc.replace(".", ","))
     except:
         info_list.append("")
+        print("Le livre à l'URL {} n'a pas de prix taxe incluse".format(url))
     try:
         price_excl = tds[3].text[1:]
         info_list.append(price_excl.replace(".", ","))
     except:
         info_list.append("")
+        print("Le livre à l'URL {} n'a pas de prix taxe exclue".format(url))
 
     # Number in stock is written inside a string with unneeded information. Getting rid of it with replace function.
     try:
         info_list.append(tds[5].text.replace("In stock (", "").replace(" available)", ""))
     except:
         info_list.append("")
+        print("Le livre à l'URL {} n'a pas de nombre en stock".format(url))
 
     # The category is only visible in a link on top of the page. We can access it by finding all 'li' elements
     liz = soup.findAll('li')
@@ -89,6 +95,7 @@ def format_book_info_for_csv(soup, url):
         info_list.append(liz[2].text.strip())
     except:
         info_list.append("")
+        print("Le livre à l'URL {} n'a pas de catégorie".format(url))
 
     # The review rating is found in the name of the div containing the stars
     try:
@@ -101,6 +108,7 @@ def format_book_info_for_csv(soup, url):
         info_list.append(str(rating_nb))
     except:
         info_list.append("")
+        print("Le livre à l'URL {} n'a pas de note".format(url))
 
     # There is only one image in the page, so we can acess the link of the image by searching
     # the one img div with bs4
@@ -110,6 +118,7 @@ def format_book_info_for_csv(soup, url):
         info_list.append(final_link)
     except:
         info_list.append("")
+        print("Le livre à l'URL {} n'a pas de lien d'image".format(url))
 
     # Retrieving the book name from the URL to name the saved image
     img_name = url.split("/")[-2].split('_')[0]
@@ -158,7 +167,6 @@ for key in categories_urls:
     nb_books_cat = int(category_content.find('form').findChildren()[1].text)
     nb_pages = math.ceil(nb_books_cat / 20)
     print("Extraction des informations et des images des {} livres de la catégorie {}.".format(nb_books_cat, file_name))
-    # TODO : Might be worth it to use parallel queries there too, for some categories have up to 150 books. Not sure.
     # Extract books URL of the first pages of result
     get_books_url_from_category_page(category_content, book_urls)
     # This loop is entered only if there are more than 20 books in the category.
