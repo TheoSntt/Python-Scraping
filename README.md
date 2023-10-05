@@ -1,11 +1,13 @@
 
-# SCRIPT D'EXTRACTION DES INFORMATIONS DU SITE https://books.toscrape.com/ POUR BOOKS ONLINE
+# Script Python de scraping du site https://books.toscrape.com/
 
+## Description du projet
 
-## Avertissements
+Il s'agit du premier projet réalisé dans le cadre de ma formation OpenClassrooms.
+Il s'agit d'un script très basique. Le but du projet était de me remettre le pied à l'étrier en termes de Python, utilisation des environnements virtuels, ...
+Avec le recul, assez intéressant de voir la manière dont j'avais développé ce projet à l'époque : sans POO, avec une fonction monolythique de 80 lignes.
+M'a tout de même permis de découvrir le principe du scraping.
 
-Ce script Python a pour but d'extraire les informations demandées par Books Online du site books.toscrape.com  
-Il a été conçu pour Books Online et a pour vocation de n'être utilisé que par Books Online.  
 
 ## Mise en place et exécution du script
 
@@ -34,6 +36,6 @@ pip install -r requirements.txt
 ```		
 python script.py
 ```
-NB : Les fichiers seront générés dans un dossier results/<date du jour>/ au sein dossier dans lequel le script est exécuté.
+NB : Les fichiers seront générés dans un dossier results/<date-du-jour>/ au sein dossier dans lequel le script est exécuté.
 
 
