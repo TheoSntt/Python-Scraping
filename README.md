@@ -36,6 +36,6 @@ pip install -r requirements.txt
 ```		
 python script.py
 ```
-NB : Les fichiers seront générés dans un dossier results/<date-du-jour>/ au sein dossier dans lequel le script est exécuté.
+NB : Les fichiers seront générés dans un dossier results/ date du jour / au sein dossier dans lequel le script est exécuté.
 
 
