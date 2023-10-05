@@ -3,10 +3,10 @@
 
 ## Description du projet
 
-Il s'agit du premier projet réalisé dans le cadre de ma formation OpenClassrooms.
-Il s'agit d'un script très basique. Le but du projet était de me remettre le pied à l'étrier en termes de Python, utilisation des environnements virtuels, ...
-Avec le recul, assez intéressant de voir la manière dont j'avais développé ce projet à l'époque : sans POO, avec une fonction monolythique de 80 lignes.
-M'a tout de même permis de découvrir le principe du scraping.
+Il s'agit du premier projet réalisé dans le cadre de ma formation OpenClassrooms.  
+Il s'agit d'un script très basique. Le but du projet était de me remettre le pied à l'étrier en termes de Python, utilisation des environnements virtuels, ...  
+Avec le recul, assez intéressant de voir la manière dont j'avais développé ce projet à l'époque : sans POO, avec une fonction monolythique de 80 lignes.  
+M'a tout de même permis de découvrir le principe du scraping, l'utilisation de BeautifulSoup et de concurrent.futures.  
 
 
 ## Mise en place et exécution du script
